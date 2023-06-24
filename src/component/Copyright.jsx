@@ -40,7 +40,7 @@ const Copyright = () => {
             <InputLabel id="footer-select-label">Language</InputLabel>
             <Select
               id="footer-select"
-              value="English"
+              value="en-US"
               label="language"
               onChange={handleChange}
             >
