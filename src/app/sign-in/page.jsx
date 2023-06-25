@@ -1,4 +1,5 @@
 'use client';
+import { useAuthContext } from '@/context/AuthProvider';
 import {
   Box,
   Button,
@@ -9,30 +10,15 @@ import {
   Link,
   TextField,
 } from '@mui/material';
-import { useRouter, useSearchParams } from 'next/navigation';
-import HttpPost from '../request/httpPost';
 
 export default function SignIn() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { login } = useAuthContext();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    const response = await HttpPost('/auth/login', null, {
-      username: data.get('username'),
-      password: data.get('password'),
-    });
-    if (response.success) {
-      localStorage.setItem(
-        process.env.CURRENT_USER_CONTEXT_KEY,
-        JSON.stringify(response.data)
-      );
-      const nextUrl = searchParams.get('next');
-      router.push(nextUrl ?? '/');
-      router.refresh();
-    }
+    await login(data.get('username'), data.get('password'));
   };
 
   return (

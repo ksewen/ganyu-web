@@ -1,16 +1,11 @@
 'use client';
+import { useAuthContext } from '@/context/AuthProvider';
 import { Box, Container, Link, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [auth, setAuth] = useState(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem(process.env.CURRENT_USER_CONTEXT_KEY);
-    setAuth(JSON.parse(user));
-  }, []);
+  const { auth } = useAuthContext();
 
   return (
     <Container>
