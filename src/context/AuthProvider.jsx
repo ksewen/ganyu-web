@@ -81,7 +81,15 @@ export const AuthContextProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated: !!auth, auth, setAuth, login, logout }}
+      value={{
+        isAuthenticated: !!token,
+        auth,
+        setAuth,
+        token,
+        setToken,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -91,13 +99,13 @@ export const AuthContextProvider = ({ children }) => {
 export const useAuthContext = () => useContext(AuthContext);
 
 export const ProtectRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
 
   const router = useRouter();
   const pathName = usePathname();
 
   const signInPath = '/sign-in';
-  if (isLoading || (!isAuthenticated && pathName !== signInPath)) {
+  if (!isAuthenticated && pathName !== signInPath) {
     router.push(signInPath);
     router.refresh();
   }
