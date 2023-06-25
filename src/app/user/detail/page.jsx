@@ -2,15 +2,30 @@
 import { useAuthContext } from '@/context/AuthProvider';
 import {
   Avatar,
+  Box,
   Button,
   Container,
   Grid,
   Input,
   Typography,
 } from '@mui/material';
+import { useState } from 'react';
 
 function Details() {
   const { auth } = useAuthContext();
+  const [editMode, setEditMode] = useState(false);
+
+  const [nickname, setNickname] = useState(auth?.nickname);
+  const [email, setEmail] = useState(auth?.email);
+  const [mobile, setMobile] = useState(auth?.mobile);
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setNickname(auth?.nickname);
+    setEmail(auth?.email);
+    setMobile(auth?.mobile);
+  };
+
   return (
     <Container>
       <Grid container spacing={2}>
@@ -26,9 +41,35 @@ function Details() {
           ></Avatar>
         </Grid>
         <Grid item xs={3}>
-          <Button variant="contained" sx={{ mt: 3 }} size="middle">
-            Edit
-          </Button>
+          {!editMode && (
+            <Button
+              variant="contained"
+              sx={{ mt: 3, width: 90 }}
+              size="middle"
+              onClick={() => setEditMode(true)}
+            >
+              Edit
+            </Button>
+          )}
+          {editMode && (
+            <Box>
+              <Button
+                variant="contained"
+                sx={{ mt: 3, mr: 1, width: 90 }}
+                size="middle"
+              >
+                SUBMIT
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, width: 90 }}
+                size="middle"
+                onClick={handleCancel}
+              >
+                CANCEL
+              </Button>
+            </Box>
+          )}
         </Grid>
         <Grid item xs={3}>
           <Typography variant="text" sx={{ ml: 10 }}>
@@ -48,9 +89,13 @@ function Details() {
         <Grid item xs={9}>
           <Input
             sx={{ ml: 10, width: 350 }}
-            disabled
+            disabled={!editMode}
             defaultValue={auth?.nickname}
             size="small"
+            onChange={(event) => {
+              setNickname(event.target.value);
+            }}
+            value={nickname}
           ></Input>
         </Grid>
         <Grid item xs={3}>
@@ -62,8 +107,10 @@ function Details() {
           <Input
             sx={{ ml: 10, width: 350 }}
             size="small"
-            disabled
+            disabled={!editMode}
             defaultValue={auth?.email}
+            onChange={(event) => setEmail(event.target.value)}
+            value={email}
           ></Input>
         </Grid>
         <Grid item xs={3}>
@@ -75,8 +122,10 @@ function Details() {
           <Input
             sx={{ ml: 10, width: 350 }}
             size="small"
-            disabled
+            disabled={!editMode}
             defaultValue={auth?.mobile}
+            onChange={(event) => setMobile(event.target.value)}
+            value={mobile}
           ></Input>
         </Grid>
         <Grid item xs={3}>
@@ -85,12 +134,9 @@ function Details() {
           </Typography>
         </Grid>
         <Grid item xs={9}>
-          <Input
-            sx={{ ml: 10, width: 350 }}
-            size="small"
-            disabled
-            defaultValue={auth?.createTime}
-          ></Input>
+          <Typography variant="text" sx={{ ml: 10 }}>
+            {auth?.createTime}
+          </Typography>
         </Grid>
       </Grid>
     </Container>
