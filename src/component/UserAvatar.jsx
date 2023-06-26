@@ -9,24 +9,20 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import Link from 'next/link';
 import { useState } from 'react';
 
-const settings = ['Account', 'Logout'];
+const settings = [
+  { value: 'Account', path: '/user/detail' },
+  { value: 'Logout', path: '/logout' },
+];
 
 function UserAvatar() {
   const { auth } = useAuthContext();
-  const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
@@ -57,8 +53,10 @@ function UserAvatar() {
         onClose={handleCloseUserMenu}
       >
         {settings.map((setting) => (
-          <MenuItem key={setting} onClick={handleCloseUserMenu}>
-            <Typography textAlign="center">{setting}</Typography>
+          <MenuItem key={setting.value} onClick={handleCloseUserMenu}>
+            <Typography textAlign="center">
+              <Link href={setting.path}>{setting.value}</Link>
+            </Typography>
           </MenuItem>
         ))}
       </Menu>
