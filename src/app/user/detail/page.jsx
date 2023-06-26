@@ -1,29 +1,59 @@
 'use client';
 import { useAuthContext } from '@/context/AuthProvider';
+import useAxiosPrivate from '@/hook/useAxiosPrivate';
 import {
   Avatar,
   Box,
   Button,
   Container,
   Grid,
-  Input,
+  TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function Details() {
-  const { auth } = useAuthContext();
+  const { auth, setAuth } = useAuthContext();
   const [editMode, setEditMode] = useState(false);
 
-  const [nickname, setNickname] = useState(auth?.nickname);
-  const [email, setEmail] = useState(auth?.email);
-  const [mobile, setMobile] = useState(auth?.mobile);
+  const [nickname, setNickname] = useState('');
+  const [mobile, setMobile] = useState('');
+
+  const axiosPrivate = useAxiosPrivate();
+
+  useEffect(() => {
+    setNickname(auth?.nickname);
+    setMobile(auth?.mobile);
+  }, [auth]);
 
   const handleCancel = () => {
     setEditMode(false);
     setNickname(auth?.nickname);
-    setEmail(auth?.email);
     setMobile(auth?.mobile);
+  };
+
+  const handleSubmit = async () => {
+    const controller = new AbortController();
+    const body = { id: auth?.id, nickname: null, mobile: null };
+    if (nickname) {
+      body.nickname = nickname;
+    }
+    if (mobile) {
+      body.mobile = mobile;
+    }
+    try {
+      const response = await axiosPrivate.post(
+        '/user/modify',
+        JSON.stringify(body),
+        {
+          signal: controller.signal,
+        }
+      );
+      setAuth(response.data.data);
+      handleCancel();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -57,6 +87,7 @@ function Details() {
                 variant="contained"
                 sx={{ mt: 3, mr: 1, width: 90 }}
                 size="middle"
+                onClick={handleSubmit}
               >
                 SUBMIT
               </Button>
@@ -76,19 +107,31 @@ function Details() {
             username:
           </Typography>
         </Grid>
-        <Grid item xs={9}>
-          <Typography variant="text" sx={{ ml: 10 }}>
-            {auth?.username}
-          </Typography>
+        <Grid item xs={5}>
+          <TextField
+            id="username-value"
+            variant="standard"
+            InputProps={{ disableUnderline: true }}
+            fullWidth
+            sx={{ ml: 10 }}
+            size="small"
+            disabled
+            defaultValue={auth?.username}
+          ></TextField>
         </Grid>
+        <Grid item xs={4}></Grid>
         <Grid item xs={3}>
           <Typography variant="text" sx={{ ml: 10 }}>
             nickname:
           </Typography>
         </Grid>
-        <Grid item xs={9}>
-          <Input
-            sx={{ ml: 10, width: 350 }}
+        <Grid item xs={5}>
+          <TextField
+            id="nickname-value"
+            variant="standard"
+            InputProps={{ disableUnderline: !editMode }}
+            fullWidth
+            sx={{ ml: 10 }}
             disabled={!editMode}
             defaultValue={auth?.nickname}
             size="small"
@@ -96,48 +139,65 @@ function Details() {
               setNickname(event.target.value);
             }}
             value={nickname}
-          ></Input>
+          ></TextField>
         </Grid>
+        <Grid item xs={4}></Grid>
         <Grid item xs={3}>
           <Typography variant="text" sx={{ ml: 10 }}>
             email:
           </Typography>
         </Grid>
-        <Grid item xs={9}>
-          <Input
-            sx={{ ml: 10, width: 350 }}
+        <Grid item xs={5}>
+          <TextField
+            id="email-value"
+            variant="standard"
+            InputProps={{ disableUnderline: true }}
+            fullWidth
+            sx={{ ml: 10 }}
             size="small"
-            disabled={!editMode}
+            disabled
             defaultValue={auth?.email}
-            onChange={(event) => setEmail(event.target.value)}
-            value={email}
-          ></Input>
+          ></TextField>
         </Grid>
+        <Grid item xs={4}></Grid>
         <Grid item xs={3}>
           <Typography variant="text" sx={{ ml: 10 }}>
             mobile:
           </Typography>
         </Grid>
-        <Grid item xs={9}>
-          <Input
-            sx={{ ml: 10, width: 350 }}
+        <Grid item xs={5}>
+          <TextField
+            id="mobile-value"
+            variant="standard"
+            InputProps={{ disableUnderline: !editMode }}
+            fullWidth
+            sx={{ ml: 10 }}
             size="small"
             disabled={!editMode}
             defaultValue={auth?.mobile}
             onChange={(event) => setMobile(event.target.value)}
             value={mobile}
-          ></Input>
+          ></TextField>
         </Grid>
+        <Grid item xs={4}></Grid>
         <Grid item xs={3}>
           <Typography variant="text" sx={{ ml: 10 }}>
             create time:
           </Typography>
         </Grid>
-        <Grid item xs={9}>
-          <Typography variant="text" sx={{ ml: 10 }}>
-            {auth?.createTime}
-          </Typography>
+        <Grid item xs={5}>
+          <TextField
+            id="create-time-value"
+            variant="standard"
+            InputProps={{ disableUnderline: true }}
+            fullWidth
+            sx={{ ml: 10 }}
+            size="small"
+            disabled
+            defaultValue={auth?.createTime}
+          ></TextField>
         </Grid>
+        <Grid item xs={4}></Grid>
       </Grid>
     </Container>
   );

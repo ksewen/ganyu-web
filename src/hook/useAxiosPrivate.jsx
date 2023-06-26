@@ -1,17 +1,17 @@
+import { axiosPrivate } from '@/api/axios';
 import { useAuthContext } from '@/context/AuthProvider';
 import { useEffect } from 'react';
-import { axiosPrivate } from '../api/axios';
 import useRefreshToken from './useRefreshToken';
 
 const useAxiosPrivate = () => {
   const refresh = useRefreshToken();
-  const { auth } = useAuthContext();
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const requestIntercept = axiosPrivate.interceptors.request.use(
       (config) => {
         if (!config.headers['Authorization']) {
-          config.headers['Authorization'] = `Bearer ${auth?.accessToken}`;
+          config.headers['Authorization'] = `Bearer ${token?.accessToken}`;
         }
         return config;
       },
@@ -36,7 +36,7 @@ const useAxiosPrivate = () => {
       axiosPrivate.interceptors.request.eject(requestIntercept);
       axiosPrivate.interceptors.response.eject(responseIntercept);
     };
-  }, [auth, refresh]);
+  }, [token, refresh]);
 
   return axiosPrivate;
 };
