@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [token, setToken] = useLocalStorage(
+  const [token, setToken, resetToken] = useLocalStorage(
     process.env.CURRENT_USER_CONTEXT_KEY,
     null
   );
@@ -75,8 +75,19 @@ export const AuthContextProvider = ({ children }) => {
     router.refresh;
   };
 
-  const logout = () => {
-    console.log(auth);
+  const logout = async () => {
+    try {
+      axios.defaults.headers.Authorization = `Bearer ${token.accessToken}`;
+      await axios.post('/user/logout', null, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+    resetToken();
+    setAuth(null);
+    router.push('/');
+    router.refresh;
   };
 
   return (
