@@ -1,15 +1,22 @@
 'use client';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 const NotFound = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    setTimeout(() => {
-      router.push('/');
+    const nextUrl = searchParams.get('next');
+    let timer1 = setTimeout(() => {
+      router.push(nextUrl ?? '/sign-in');
+      router.refresh();
     }, 3000);
+
+    return () => {
+      clearTimeout(timer1);
+    };
   }, []);
 
   return (

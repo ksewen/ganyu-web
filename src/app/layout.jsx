@@ -1,21 +1,21 @@
-import Copyright from '@/component/copyright';
-import Navbar from '@/component/navbar';
+'use client';
+import Copyright from '@/component/Copyright';
+import Navbar from '@/component/NavBar';
+import { AuthContextProvider } from '@/context/AuthProvider';
+import { Container } from '@mui/material';
 import styles from './global.css';
-
-export const metadata = {
-  title: {
-    template: '%s | Ganyu',
-  },
-  description: 'a little assistant',
-};
 
 const Layout = ({ children }) => {
   return (
     <html lang="en">
-      <body className="content" suppressHydrationWarning={true}>
-        <Navbar />
-        {children}
-        <Copyright />
+      <body className={styles.content} suppressHydrationWarning={true}>
+        <Container>
+          <AuthContextProvider>
+            <Navbar />
+            {children}
+            <Copyright />
+          </AuthContextProvider>
+        </Container>
       </body>
     </html>
   );

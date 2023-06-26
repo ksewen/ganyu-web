@@ -1,4 +1,5 @@
 'use client';
+import { useAuthContext } from '@/context/AuthProvider';
 import {
   Box,
   Button,
@@ -11,13 +12,13 @@ import {
 } from '@mui/material';
 
 export default function SignIn() {
-  const handleSubmit = (event) => {
+  const { login } = useAuthContext();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('username'),
-      password: data.get('password'),
-    });
+
+    await login(data.get('username'), data.get('password'));
   };
 
   return (
