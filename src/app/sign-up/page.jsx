@@ -1,23 +1,41 @@
 'use client';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Grid,
-  Link,
-  TextField,
-} from '@mui/material';
+import { useAuthContext } from '@/context/AuthProvider';
+import { Box, Button, Container, Grid, Link, TextField } from '@mui/material';
+import { useForm } from 'react-hook-form';
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+  const { signUp } = useAuthContext();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    console.log(data);
+    await signUp(data.username, data.password, data.email, data.nickname);
+  };
+
+  const validateSchema = {
+    username: { required: 'username ist required' },
+    email: {
+      required: 'email is required',
+      pattern: {
+        value: /\S+@\S+\.\S+/,
+        message: 'please enter a valid email',
+      },
+    },
+    password: {
+      required: 'password is required',
+      minLength: {
+        value: 6,
+        message: 'minimum characters 6 required',
+      },
+      maxLength: {
+        value: 18,
+        message: 'maximum characters is 18',
+      },
+    },
   };
 
   return (
@@ -30,56 +48,69 @@ export default function SignUp() {
           alignItems: 'center',
         }}
       >
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box
+          component="form"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ mt: 3 }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 autoComplete="given-name"
-                name="firstName"
+                name="username"
                 required
                 fullWidth
-                id="firstName"
-                label="First Name"
+                id="username"
+                label="Username"
+                helperText={errors.username ? errors.username.message : ''}
                 autoFocus
+                error={errors.username ? true : false}
+                {...register('username', validateSchema.username)}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                required
                 fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="family-name"
+                id="nickname"
+                label="Nickname"
+                name="nickname"
+                autoComplete="nickname"
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
+                autoComplete="email"
                 required
                 fullWidth
                 id="email"
                 label="Email Address"
                 name="email"
-                autoComplete="email"
+                helperText={errors.email ? errors.email.message : ''}
+                error={errors.email ? true : false}
+                {...register('email', validateSchema.email)}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
+                autoComplete="new-password"
                 required
                 fullWidth
                 name="password"
                 label="Password"
                 type="password"
                 id="password"
-                autoComplete="new-password"
+                helperText={errors.password ? errors.password.message : ''}
+                error={errors.password ? true : false}
+                {...register('password', validateSchema.password)}
               />
             </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
+            {/* <Grid item xs={12}> */}
+            {/* <FormControlLabel
                 control={<Checkbox value="allowExtraEmails" color="primary" />}
                 label="I want to receive inspiration, marketing promotions and updates via email."
-              />
-            </Grid>
+              /> */}
+            {/* </Grid> */}
           </Grid>
           <Button
             type="submit"

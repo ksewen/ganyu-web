@@ -50,7 +50,6 @@ export const AuthContextProvider = ({ children }) => {
         }),
         {
           headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       );
       console.log(JSON.stringify(response?.data));
@@ -90,6 +89,37 @@ export const AuthContextProvider = ({ children }) => {
     router.refresh;
   };
 
+  const signUp = async (username, password, email, nickname) => {
+    try {
+      const requestBody = {
+        username: username,
+        password: password,
+        email: email,
+      };
+      if (nickname) {
+        requestBody.nickname = nickname;
+      }
+      console.log(nickname);
+      const response = await axios.post(
+        '/auth/register',
+        JSON.stringify(requestBody)
+      );
+      console.log(JSON.stringify(response?.data));
+    } catch (err) {
+      if (!err?.response) {
+        setErrMsg('No Server Response');
+      } else if (err.response?.status === 400) {
+        setErrMsg('Missing Username or Password');
+      } else if (err.response?.status === 401) {
+        setErrMsg('Unauthorized');
+      } else {
+        setErrMsg('Login Failed');
+      }
+    }
+    router.push('/sign-in');
+    router.refresh;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -100,6 +130,7 @@ export const AuthContextProvider = ({ children }) => {
         setToken,
         login,
         logout,
+        signUp,
       }}
     >
       {children}

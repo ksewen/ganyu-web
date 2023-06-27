@@ -1,6 +1,7 @@
 'use client';
 import { useAuthContext } from '@/context/AuthProvider';
 import useAxiosPrivate from '@/hook/useAxiosPrivate';
+
 import {
   Avatar,
   Box,
@@ -11,35 +12,47 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 function Details() {
   const { auth, setAuth } = useAuthContext();
   const [editMode, setEditMode] = useState(false);
 
-  const [nickname, setNickname] = useState('');
-  const [mobile, setMobile] = useState('');
+  // const [nickname, setNickname] = useState('');
+  // const [mobile, setMobile] = useState('');
 
   const axiosPrivate = useAxiosPrivate();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+    clearErrors,
+  } = useForm();
+
   useEffect(() => {
-    setNickname(auth?.nickname);
-    setMobile(auth?.mobile);
+    setValue('nickname', auth?.nickname);
+    setValue('mobile', auth?.mobile);
   }, [auth]);
 
   const handleCancel = () => {
     setEditMode(false);
-    setNickname(auth?.nickname);
-    setMobile(auth?.mobile);
+    setValue('nickname', auth?.nickname);
+    setValue('mobile', auth?.mobile);
+    clearErrors('nickname');
+    clearErrors('mobile');
   };
 
-  const handleSubmit = async () => {
+  const onSubmit = async () => {
     const controller = new AbortController();
     const body = { id: auth?.id, nickname: null, mobile: null };
-    if (nickname) {
-      body.nickname = nickname;
+    if (getValues('nickname')) {
+      body.nickname = getValues('nickname');
     }
-    if (mobile) {
-      body.mobile = mobile;
+    if (getValues('mobile')) {
+      body.mobile = getValues('mobile');
     }
     try {
       const response = await axiosPrivate.post(
@@ -50,10 +63,15 @@ function Details() {
         }
       );
       setAuth(response.data.data);
-      handleCancel();
+      setEditMode(false);
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const validateSchema = {
+    nickname: { required: 'required' },
+    mobile: { required: 'required' },
   };
 
   return (
@@ -87,7 +105,7 @@ function Details() {
                 variant="contained"
                 sx={{ mt: 3, mr: 1, width: 90 }}
                 size="middle"
-                onClick={handleSubmit}
+                onClick={handleSubmit(onSubmit)}
               >
                 SUBMIT
               </Button>
@@ -124,10 +142,16 @@ function Details() {
           <Typography variant="text" sx={{ ml: 10 }}>
             nickname:
           </Typography>
+          {errors?.nickname && (
+            <Typography variant="text" sx={{ ml: 1, color: 'red' }}>
+              {errors.nickname.message}
+            </Typography>
+          )}
         </Grid>
         <Grid item xs={5}>
           <TextField
             id="nickname-value"
+            name="nickname"
             variant="standard"
             InputProps={{ disableUnderline: !editMode }}
             fullWidth
@@ -135,10 +159,10 @@ function Details() {
             disabled={!editMode}
             defaultValue={auth?.nickname}
             size="small"
-            onChange={(event) => {
-              setNickname(event.target.value);
-            }}
-            value={nickname}
+            // onChange={(event) => {
+            //   setNickname(event.target.value);
+            // }}
+            {...register('nickname', validateSchema.nickname)}
           ></TextField>
         </Grid>
         <Grid item xs={4}></Grid>
@@ -164,10 +188,16 @@ function Details() {
           <Typography variant="text" sx={{ ml: 10 }}>
             mobile:
           </Typography>
+          {errors?.mobile && (
+            <Typography variant="text" sx={{ ml: 1, color: 'red' }}>
+              {errors.mobile.message}
+            </Typography>
+          )}
         </Grid>
         <Grid item xs={5}>
           <TextField
             id="mobile-value"
+            name="mobile"
             variant="standard"
             InputProps={{ disableUnderline: !editMode }}
             fullWidth
@@ -175,8 +205,8 @@ function Details() {
             size="small"
             disabled={!editMode}
             defaultValue={auth?.mobile}
-            onChange={(event) => setMobile(event.target.value)}
-            value={mobile}
+            // onChange={(event) => setMobile(event.target.value)}
+            {...register('mobile', validateSchema.mobile)}
           ></TextField>
         </Grid>
         <Grid item xs={4}></Grid>
