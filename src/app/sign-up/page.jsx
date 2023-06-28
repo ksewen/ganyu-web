@@ -12,7 +12,6 @@ export default function SignUp() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log(data);
     await signUp(data.username, data.password, data.email, data.nickname);
   };
 

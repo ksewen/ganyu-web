@@ -156,9 +156,6 @@ function Details() {
             disabled={!editMode}
             defaultValue={auth?.nickname}
             size="small"
-            // onChange={(event) => {
-            //   setNickname(event.target.value);
-            // }}
             {...register('nickname', validateSchema.nickname)}
           ></TextField>
         </Grid>
@@ -202,7 +199,6 @@ function Details() {
             size="small"
             disabled={!editMode}
             defaultValue={auth?.mobile}
-            // onChange={(event) => setMobile(event.target.value)}
             {...register('mobile', validateSchema.mobile)}
           ></TextField>
         </Grid>
