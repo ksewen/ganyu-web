@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [token, setToken] = useLocalStorage(
+  const [token, setToken, resetToken] = useLocalStorage(
     process.env.CURRENT_USER_CONTEXT_KEY,
     null
   );
@@ -50,10 +50,8 @@ export const AuthContextProvider = ({ children }) => {
         }),
         {
           headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       );
-      console.log(JSON.stringify(response?.data));
       const token = {
         accessToken: response?.data?.data?.token,
         refreshToken: response?.data?.data?.refreshToken,
@@ -75,8 +73,50 @@ export const AuthContextProvider = ({ children }) => {
     router.refresh;
   };
 
-  const logout = () => {
-    console.log(auth);
+  const logout = async () => {
+    try {
+      axios.defaults.headers.Authorization = `Bearer ${token.accessToken}`;
+      await axios.post('/user/logout', null, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+    resetToken();
+    setAuth(null);
+    router.push('/');
+    router.refresh;
+  };
+
+  const signUp = async (username, password, email, nickname) => {
+    try {
+      const requestBody = {
+        username: username,
+        password: password,
+        email: email,
+      };
+      if (nickname) {
+        requestBody.nickname = nickname;
+      }
+      console.log(nickname);
+      const response = await axios.post(
+        '/auth/register',
+        JSON.stringify(requestBody)
+      );
+      console.log(JSON.stringify(response?.data));
+    } catch (err) {
+      if (!err?.response) {
+        setErrMsg('No Server Response');
+      } else if (err.response?.status === 400) {
+        setErrMsg('Missing Username or Password');
+      } else if (err.response?.status === 401) {
+        setErrMsg('Unauthorized');
+      } else {
+        setErrMsg('Login Failed');
+      }
+    }
+    router.push('/sign-in');
+    router.refresh;
   };
 
   return (
@@ -89,6 +129,7 @@ export const AuthContextProvider = ({ children }) => {
         setToken,
         login,
         logout,
+        signUp,
       }}
     >
       {children}

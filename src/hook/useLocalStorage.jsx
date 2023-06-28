@@ -7,6 +7,11 @@ export const useLocalStorage = (key, initialValue) => {
     window.localStorage.setItem(key, JSON.stringify(value));
   };
 
+  const resetValue = () => {
+    setValue(null);
+    setStoredValue(null);
+  };
+
   useEffect(() => {
     const value = window.localStorage.getItem(key);
 
@@ -29,5 +34,5 @@ export const useLocalStorage = (key, initialValue) => {
     }
   }, [storedValue]);
 
-  return [storedValue, setStoredValue];
+  return [storedValue, setStoredValue, resetValue];
 };

@@ -1,24 +1,23 @@
 'use client';
 import { useAuthContext } from '@/context/AuthProvider';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Grid,
-  Link,
-  TextField,
-} from '@mui/material';
+import { Box, Button, Container, Grid, Link, TextField } from '@mui/material';
+import { useForm } from 'react-hook-form';
 
 export default function SignIn() {
   const { login } = useAuthContext();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  const onSubmit = async (data) => {
+    await login(data.username, data.password);
+  };
 
-    await login(data.get('username'), data.get('password'));
+  const validateSchema = {
+    username: { required: 'username ist required' },
+    password: { required: 'password is required' },
   };
 
   return (
@@ -31,7 +30,12 @@ export default function SignIn() {
           alignItems: 'center',
         }}
       >
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          sx={{ mt: 1 }}
+        >
           <TextField
             margin="normal"
             required
@@ -41,6 +45,9 @@ export default function SignIn() {
             name="username"
             autoComplete="username"
             autoFocus
+            error={errors.username ? true : false}
+            {...register('username', validateSchema.username)}
+            helperText={errors.username ? errors.username.message : ''}
           />
           <TextField
             margin="normal"
@@ -51,11 +58,14 @@ export default function SignIn() {
             type="password"
             id="password"
             autoComplete="current-password"
+            helperText={errors.password ? errors.password.message : ''}
+            error={errors.password ? true : false}
+            {...register('password', validateSchema.password)}
           />
-          <FormControlLabel
+          {/* <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
             label="Remember me"
-          />
+          /> */}
           <Button
             type="submit"
             fullWidth
