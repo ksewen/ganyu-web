@@ -5,8 +5,8 @@ import UserStatus from './UserStatus';
 
 const pages = [
   { value: 'Home', path: '/' },
+  { value: 'Shopping List', path: '/shopping-list' },
   { value: 'About', path: '/about' },
-  { value: 'Ninja Listing', path: '/ninjas' },
 ];
 
 function Navbar() {

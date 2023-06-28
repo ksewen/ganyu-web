@@ -18,9 +18,6 @@ function Details() {
   const { auth, setAuth } = useAuthContext();
   const [editMode, setEditMode] = useState(false);
 
-  // const [nickname, setNickname] = useState('');
-  // const [mobile, setMobile] = useState('');
-
   const axiosPrivate = useAxiosPrivate();
 
   const {
@@ -78,7 +75,7 @@ function Details() {
     <Container>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h6" sx={{ ml: 5, fontWeight: 'bold' }}>
+          <Typography variant="h6" sx={{ ml: 5, mb: 2, fontWeight: 'bold' }}>
             User Detail:
           </Typography>
         </Grid>

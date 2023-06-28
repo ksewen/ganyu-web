@@ -6,9 +6,7 @@ export default function Logout() {
   const { auth, logout } = useAuthContext();
 
   useEffect(() => {
-    if (auth) {
-      logout();
-    }
+    logout();
   }, [auth]);
 
   return (

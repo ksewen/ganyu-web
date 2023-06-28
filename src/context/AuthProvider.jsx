@@ -52,7 +52,6 @@ export const AuthContextProvider = ({ children }) => {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-      console.log(JSON.stringify(response?.data));
       const token = {
         accessToken: response?.data?.data?.token,
         refreshToken: response?.data?.data?.refreshToken,
