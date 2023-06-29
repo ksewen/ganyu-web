@@ -16,7 +16,7 @@ export default function SignIn() {
   };
 
   const validateSchema = {
-    username: { required: 'username ist required' },
+    username: { required: 'username is required' },
     password: { required: 'password is required' },
   };
 

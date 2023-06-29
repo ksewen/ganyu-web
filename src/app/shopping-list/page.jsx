@@ -1,13 +1,15 @@
 'use client';
 import { formatUrl } from '@/api/axios';
+import AddDialog from '@/component/ShoppingListAddDialog';
 import useAxiosPrivate from '@/hook/useAxiosPrivate';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DoneIcon from '@mui/icons-material/Done';
 import EditIcon from '@mui/icons-material/Edit';
 import {
   Button,
+  ButtonBase,
   Card,
-  CardActionArea,
   CardActions,
   CardContent,
   CardHeader,
@@ -26,6 +28,8 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
@@ -36,15 +40,22 @@ function ShoppingList() {
     handleSubmit,
     formState: { errors },
     setValue,
+    getValues,
     clearErrors,
     control,
   } = useForm();
 
   const [data, setData] = useState([]);
   const [index, setIndex] = useState(1);
-  const [total, settotal] = useState(9);
-  const [finish, setFinish] = useState('all');
-  const timeRangeErrorMessage = 'start date must befor end date';
+  const [total, settotal] = useState(0);
+  const [searchParams, setSearchParams] = useState({
+    index: 0,
+    count: process.env.DEFAULT_SHOPPING_LIST_PAGE_SIZE,
+  });
+  const [addMode, setAddMode] = useState(false);
+
+  const timeRangeErrorMessage = 'start date must before end date';
+  const timeRangeNotFinishMessage = 'start date and end date must be given';
 
   const onSubmit = async (data) => {
     var params = buildParamObject();
@@ -52,40 +63,57 @@ function ShoppingList() {
       params.name = data.nameKeyword;
     }
     if (data.createTimeStart && data.createTimeEnd) {
-      var after = params.createTimeAfter;
-      var before = params.createTimeBefore;
-      params.createTimeAfter = after;
-      params.createTimeBefore = before;
+      console.log(data.createTimeStart);
+      const start = moment(new Date(data.createTimeStart)).format(
+        'YYYY-MM-DD HH:mm:ss'
+      );
+      const end = moment(new Date(data.createTimeEnd)).format(
+        'YYYY-MM-DD HH:mm:ss'
+      );
+      params.createTimeAfter = start;
+      params.createTimeBefore = end;
     }
-    console.log(JSON.stringify(params));
+    setSearchParams(params);
   };
 
   function buildParamObject() {
-    const params = {
-      index: index > 0 ? index - 1 : 0,
-      count: process.env.DEFAULT_SHOPPING_LIST_PAGE_SIZE,
-    };
-    if (finish === 'finished') {
-      params.finished = true;
-    } else if (finish === 'ongoing') {
-      params.finished = false;
-    }
-    return params;
+    const prev = searchParams;
+    return prev == null
+      ? {
+          index: index > 0 ? index - 1 : 0,
+          count: process.env.DEFAULT_SHOPPING_LIST_PAGE_SIZE,
+        }
+      : {
+          index: prev.index,
+          count: prev.count,
+          finished: prev.finished,
+          createTimeAfter: prev.createTimeAfter,
+          createTimeBefore: prev.createTimeBefore,
+        };
   }
 
-  const handleChangePage = (e, page) => {
-    setIndex(page);
-  };
-
   const handleChangeRadio = (e, value) => {
-    setFinish(value);
+    const post = buildParamObject();
+    if (value === 'finished') {
+      post.finished = true;
+    } else if (value === 'ongoing') {
+      post.finished = false;
+    } else if (value === 'all') {
+      post.finished = null;
+    }
+    setSearchParams(post);
   };
 
   const handleResetSearchCondition = () => {
+    const post = buildParamObject();
     setValue('nameKeyword', null);
+    post.name = null;
     setValue('createTimeStart', null);
+    post.createTimeAfter = null;
     setValue('createTimeEnd', null);
+    post.createTimeBefore = null;
     clearErrors();
+    setSearchParams(post);
   };
 
   useEffect(() => {
@@ -103,8 +131,8 @@ function ShoppingList() {
         console.error(err);
       }
     }
-    fetchData(buildParamObject());
-  }, [index, finish]);
+    fetchData(searchParams);
+  }, [searchParams, addMode]);
 
   return (
     <Container>
@@ -156,12 +184,15 @@ function ShoppingList() {
             rules={{
               validate: {
                 startMustBeforEnd: (value, formValue) => {
-                  if (value == null || formValue.createTimeEnd == null) {
-                    return true;
+                  if (value == null && formValue.createTimeEnd != null) {
+                    return timeRangeNotFinishMessage;
                   }
-                  return (
-                    value < formValue.createTimeEnd || timeRangeErrorMessage
-                  );
+                  if (value != null && formValue.createTimeEnd != null) {
+                    return (
+                      value < formValue.createTimeEnd || timeRangeErrorMessage
+                    );
+                  }
+                  return true;
                 },
               },
             }}
@@ -177,6 +208,11 @@ function ShoppingList() {
                       error: errors.createTimeStart ? true : false,
                     },
                   }}
+                  viewRenderers={{
+                    hours: renderTimeViewClock,
+                    minutes: renderTimeViewClock,
+                    seconds: renderTimeViewClock,
+                  }}
                   sx={{ ml: 1 }}
                   disableFuture
                   onChange={onChange}
@@ -190,12 +226,15 @@ function ShoppingList() {
             rules={{
               validate: {
                 startMustBeforEnd: (value, formValue) => {
-                  if (value == null || formValue.createTimeStart == null) {
-                    return true;
+                  if (value == null && formValue.createTimeStart != null) {
+                    return timeRangeNotFinishMessage;
                   }
-                  return (
-                    formValue.createTimeStart < value || timeRangeErrorMessage
-                  );
+                  if (value != null && formValue.createTimeStart != null) {
+                    return (
+                      formValue.createTimeStart < value || timeRangeErrorMessage
+                    );
+                  }
+                  return true;
                 },
               },
             }}
@@ -210,6 +249,11 @@ function ShoppingList() {
                       helperText: errors.createTimeEnd?.message,
                       error: errors.createTimeEnd ? true : false,
                     },
+                  }}
+                  viewRenderers={{
+                    hours: renderTimeViewClock,
+                    minutes: renderTimeViewClock,
+                    seconds: renderTimeViewClock,
                   }}
                   sx={{ ml: 1 }}
                   disableFuture
@@ -245,14 +289,23 @@ function ShoppingList() {
               <CardHeader title={item.name} subheader={item.createTime} />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
-                  {item.description}
+                  {item.description
+                    ? item.description
+                    : 'lazy man left nothing here :('}
                 </Typography>
               </CardContent>
               <CardActions disableSpacing>
-                <IconButton aria-label="add to favorites">
-                  <EditIcon />
-                </IconButton>
-                <IconButton aria-label="add to favorites">
+                {item.finished && (
+                  <IconButton disabled aria-label="done item">
+                    <DoneIcon sx={{ color: 'green' }} />
+                  </IconButton>
+                )}
+                {!item.finished && (
+                  <IconButton aria-label="edit item">
+                    <EditIcon />
+                  </IconButton>
+                )}
+                <IconButton aria-label="delete item">
                   <DeleteIcon />
                 </IconButton>
               </CardActions>
@@ -260,20 +313,38 @@ function ShoppingList() {
           </Grid>
         ))}
         <Grid item xs={4}>
-          <Card sx={{ height: 1 / 1, textAlign: 'center' }}>
-            <CardActionArea sx={{ height: 1 / 1 }}>
-              <AddIcon sx={{ fontSize: 70 }}></AddIcon>
-            </CardActionArea>
+          <Card
+            sx={{ height: data?.length > 0 ? 1 / 1 : 200, textAlign: 'center' }}
+          >
+            <ButtonBase
+              sx={{ height: 1 / 1, width: 1 / 1 }}
+              onClick={() => {
+                setAddMode(true);
+              }}
+            >
+              <AddIcon sx={{ fontSize: 40 }}></AddIcon>
+            </ButtonBase>
           </Card>
         </Grid>
       </Grid>
+      <AddDialog
+        open={addMode}
+        changeMode={(open) => {
+          setAddMode(open);
+        }}
+      />
       <Stack spacing={2} disableSpacing>
         <Pagination
           count={Math.ceil(total / process.env.DEFAULT_SHOPPING_LIST_PAGE_SIZE)}
           defaultValue={index}
           shape="rounded"
           size="small"
-          onChange={handleChangePage}
+          onChange={(e, page) => {
+            setIndex(page);
+            const post = buildParamObject();
+            post.index = page - 1;
+            setSearchParams(post);
+          }}
         />
       </Stack>
     </Container>

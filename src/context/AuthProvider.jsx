@@ -57,6 +57,7 @@ export const AuthContextProvider = ({ children }) => {
         refreshToken: response?.data?.data?.refreshToken,
         expireAt: response?.data?.data?.expireAt,
       };
+      console.log(JSON.stringify(response));
       setToken(token);
     } catch (err) {
       if (!err?.response) {
