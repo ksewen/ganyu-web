@@ -3,7 +3,6 @@ import { formatUrl } from '@/api/axios';
 import AddDialog from '@/component/ShoppingListAddDialog';
 import useAxiosPrivate from '@/hook/useAxiosPrivate';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DoneIcon from '@mui/icons-material/Done';
 import EditIcon from '@mui/icons-material/Edit';
 import {
@@ -301,13 +300,28 @@ function ShoppingList() {
                   </IconButton>
                 )}
                 {!item.finished && (
+                  <IconButton
+                    aria-label="set done item"
+                    onClick={async () => {
+                      try {
+                        const response = await axiosPrivate.post(
+                          '/shopping-list/mark-finished?id=' + item.id
+                        );
+                        const post = buildParamObject();
+                        setSearchParams(post);
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }}
+                  >
+                    <DoneIcon />
+                  </IconButton>
+                )}
+                {!item.finished && (
                   <IconButton aria-label="edit item">
                     <EditIcon />
                   </IconButton>
                 )}
-                <IconButton aria-label="delete item">
-                  <DeleteIcon />
-                </IconButton>
               </CardActions>
             </Card>
           </Grid>
