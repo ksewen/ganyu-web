@@ -4,7 +4,7 @@ import AddDialog from '@/component/ShoppingListAddDialog';
 import useAxiosPrivate from '@/hook/useAxiosPrivate';
 import AddIcon from '@mui/icons-material/Add';
 import DoneIcon from '@mui/icons-material/Done';
-import EditIcon from '@mui/icons-material/Edit';
+import StorageIcon from '@mui/icons-material/Storage';
 import {
   Button,
   ButtonBase,
@@ -29,6 +29,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
@@ -39,10 +40,11 @@ function ShoppingList() {
     handleSubmit,
     formState: { errors },
     setValue,
-    getValues,
     clearErrors,
     control,
   } = useForm();
+
+  const router = useRouter();
 
   const [data, setData] = useState([]);
   const [index, setIndex] = useState(1);
@@ -52,6 +54,7 @@ function ShoppingList() {
     count: process.env.DEFAULT_SHOPPING_LIST_PAGE_SIZE,
   });
   const [addMode, setAddMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const timeRangeErrorMessage = 'start date must before end date';
   const timeRangeNotFinishMessage = 'start date and end date must be given';
@@ -105,12 +108,12 @@ function ShoppingList() {
 
   const handleResetSearchCondition = () => {
     const post = buildParamObject();
-    setValue('nameKeyword', null);
     post.name = null;
-    setValue('createTimeStart', null);
     post.createTimeAfter = null;
-    setValue('createTimeEnd', null);
     post.createTimeBefore = null;
+    setValue('nameKeyword', null);
+    setValue('createTimeStart', null);
+    setValue('createTimeEnd', null);
     clearErrors();
     setSearchParams(post);
   };
@@ -284,7 +287,13 @@ function ShoppingList() {
         </Grid>
         {data.map((item) => (
           <Grid key={item.id} item xs={4}>
-            <Card key={item.id} sx={{ height: 1 / 1 }}>
+            <Card
+              key={item.id}
+              onClick={() => {
+                router.push('/shopping-list/' + item.id);
+              }}
+              sx={{ height: 1 / 1 }}
+            >
               <CardHeader title={item.name} subheader={item.createTime} />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
@@ -304,7 +313,7 @@ function ShoppingList() {
                     aria-label="set done item"
                     onClick={async () => {
                       try {
-                        const response = await axiosPrivate.post(
+                        await axiosPrivate.post(
                           '/shopping-list/mark-finished?id=' + item.id
                         );
                         const post = buildParamObject();
@@ -319,7 +328,7 @@ function ShoppingList() {
                 )}
                 {!item.finished && (
                   <IconButton aria-label="edit item">
-                    <EditIcon />
+                    <StorageIcon />
                   </IconButton>
                 )}
               </CardActions>

@@ -1,10 +1,12 @@
 'use client';
 import { useAuthContext } from '@/context/AuthProvider';
-import { Box, Container, Link, Typography } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const { auth } = useAuthContext();
 
   return (
@@ -14,8 +16,14 @@ export default function Home() {
       </Typography>
       <Box>
         {auth && (
-          <Typography align="center" className="not-found">
-            <Link href="/user/detail">{auth?.username}</Link>
+          <Typography variant="h5" align="center" className="not-found">
+            <a
+              onClick={() => {
+                router.push('/user/detail');
+              }}
+            >
+              {auth?.username}
+            </a>
           </Typography>
         )}
         {!auth && (

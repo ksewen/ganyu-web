@@ -8,11 +8,12 @@ const useRefreshToken = () => {
     try {
       axios.defaults.headers.Authorization = `Bearer ${token.accessToken}`;
       const response = await axios.post('/token-refresh');
-      setToken((prev) => {
-        console.log(JSON.stringify(prev));
-        console.log(response.data.data.token);
-        return { ...prev, accessToken: response.data.data.token };
-      });
+      const token = {
+        accessToken: response?.data?.data?.token,
+        refreshToken: response?.data?.data?.refreshToken,
+        expireAt: response?.data?.data?.expireAt,
+      };
+      setToken(token);
       return response.data.data.token;
     } catch (err) {
       setToken(null);
